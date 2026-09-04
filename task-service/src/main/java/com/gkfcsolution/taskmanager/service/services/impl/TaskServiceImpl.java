@@ -75,7 +75,12 @@ public class TaskServiceImpl implements TaskService {
         log.info("Task created successfully with id: {}", savedTask.getId());
 
         // TODO: Envoyer notification à l'assigné
-//         notificationService.sendTaskAssignedNotification(savedTask, assignee);
+        // ✅ Envoyer notification SEULEMENT SI un assignee existe
+        if (savedTask.getAssignee() != null) {
+            notificationService.sendTaskAssignedNotification(savedTask, savedTask.getAssignee());
+        } else {
+            log.debug("ℹ️ No assignee, notification skipped for task: {}", savedTask.getId());
+        }
 
         return taskMapper.toResponse(savedTask);
     }
