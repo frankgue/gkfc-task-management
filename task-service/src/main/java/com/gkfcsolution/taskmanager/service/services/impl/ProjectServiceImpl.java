@@ -78,15 +78,20 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.toResponse(project);
     }
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectResponse> getProjectsByUser(UUID userId) {
-        log.debug("Fetching projects for user: {}", userId);
+        log.debug("Fetching all projects for user: {} (as creator or member)", userId);
 
-        return projectRepository.findByMembers_Id(userId).stream()
+        // ✅ Récupère tous les projets où l'utilisateur est creator OU member
+        List<Project> projects = projectRepository.findProjectsByCreatorOrMember(userId);
+
+        log.debug("Found {} projects for user: {}", projects.size(), userId);
+        return projects.stream()
                 .map(projectMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
+
 
     @Override
     public ProjectResponse updateProjectStatus(UUID id, String status) {

@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +36,7 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class ProjectController {
 
+    private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
     private final ProjectService projectService;
     private final UserService userService;
 
@@ -55,12 +58,23 @@ public class ProjectController {
         ProjectResponse response = projectService.getProjectById(id);
         return ResponseEntity.ok(response);
     }
+/*
+    @GetMapping("/creator")
+    @Operation(summary = "Get all projects for current user")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'MEMBER')")
+    public ResponseEntity<List<ProjectResponse>> getMyProjectsByCreator(Authentication authentication) {
+        var currentUser = userService.getCurrentUser(authentication);
+        log.debug("Current User : " + currentUser.getId() + " - " + currentUser.getEmail());
+        List<ProjectResponse> projects = projectService.getProjectsByUser(currentUser.getId());
+        return ResponseEntity.ok(projects);
+    }*/
 
     @GetMapping
     @Operation(summary = "Get all projects for current user")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'MEMBER')")
     public ResponseEntity<List<ProjectResponse>> getMyProjects(Authentication authentication) {
         var currentUser = userService.getCurrentUser(authentication);
+        log.debug("Current User : " + currentUser.getId() + " - " + currentUser.getEmail());
         List<ProjectResponse> projects = projectService.getProjectsByUser(currentUser.getId());
         return ResponseEntity.ok(projects);
     }

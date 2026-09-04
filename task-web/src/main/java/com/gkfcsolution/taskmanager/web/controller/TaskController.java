@@ -3,6 +3,7 @@ package com.gkfcsolution.taskmanager.web.controller;
 import com.gkfcsolution.taskmanager.service.dto.request.TaskCreateRequest;
 import com.gkfcsolution.taskmanager.service.dto.request.TaskFilterRequest;
 import com.gkfcsolution.taskmanager.service.dto.request.TaskUpdateRequest;
+import com.gkfcsolution.taskmanager.service.dto.response.PagedResponse;
 import com.gkfcsolution.taskmanager.service.dto.response.TaskResponse;
 import com.gkfcsolution.taskmanager.service.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,14 +49,25 @@ public class TaskController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all tasks for current user (creator, assignee, or member)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'MEMBER')")
+    public ResponseEntity<PagedResponse<TaskResponse>> getMyTasks(
+            @ModelAttribute TaskFilterRequest filter,
+            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+        // ✅ Récupère les tâches où l'utilisateur est creator, assignee, ou member
+        Page<TaskResponse> tasks = taskService.getTasksForCurrentUser(filter, pageable);
+        return ResponseEntity.ok(PagedResponse.of(tasks));
+    }
+
+    @GetMapping("/all")
     @Operation(summary = "Get all tasks with filters")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'MEMBER')")
-    public ResponseEntity<Page<TaskResponse>> getAllTasks(
+    public ResponseEntity<PagedResponse<TaskResponse>> getAllTasks(
             @ModelAttribute TaskFilterRequest filter,
             @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
         // ✅ Utiliser searchTasks au lieu de getAllTasks
         Page<TaskResponse> tasks = taskService.searchTasks(filter, pageable);
-        return ResponseEntity.ok(tasks);
+        return ResponseEntity.ok(PagedResponse.of(tasks));
     }
 
     @PutMapping("/{id}")

@@ -22,6 +22,8 @@ import java.util.UUID;
 public interface TaskService {
     TaskResponse createTask(TaskCreateRequest request);
     TaskResponse getTaskById(UUID id);
+    // Récupère toutes les tâches de l'utilisateur (creator, assignee, member)
+    Page<TaskResponse> getTasksForCurrentUser(TaskFilterRequest filter, Pageable pageable);
 
     Page<TaskResponse> searchTasks(TaskFilterRequest filter, Pageable pageable);
     TaskResponse updateTask(UUID id, TaskUpdateRequest request);

@@ -75,7 +75,7 @@ public class TaskServiceImpl implements TaskService {
         log.info("Task created successfully with id: {}", savedTask.getId());
 
         // TODO: Envoyer notification à l'assigné
-         notificationService.sendTaskAssignedNotification(savedTask, assignee);
+//         notificationService.sendTaskAssignedNotification(savedTask, assignee);
 
         return taskMapper.toResponse(savedTask);
     }
@@ -165,6 +165,19 @@ public class TaskServiceImpl implements TaskService {
         } catch (IllegalArgumentException e) {
             throw new BusinessException("Invalid status: " + status);
         }
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TaskResponse> getTasksForCurrentUser(TaskFilterRequest filter, Pageable pageable) {
+        log.debug("Getting tasks for current user with filters: {}", filter);
+
+        User currentUser = getCurrentUser();
+
+        // ✅ Utiliser la nouvelle méthode du repository
+        return taskRepository.findTasksByUserAsCreatorAssigneeOrMember(currentUser.getId(), pageable)
+                .map(taskMapper::toResponse);
     }
 
     @Override

@@ -1,14 +1,5 @@
+// task-service/src/main/java/com/gkfcsolution/taskmanager/service/specification/TaskSpecification.java
 package com.gkfcsolution.taskmanager.service.specification;
-
-/**
- * Created on 2026 at 11:00
- * File: null.java
- * Project: gkfc-task-management
- *
- * @author Frank GUEKENG
- * @date 02/09/2026
- * @time 11:00
- */
 
 import com.gkfcsolution.taskmanager.domain.entity.Task;
 import com.gkfcsolution.taskmanager.domain.entity.User;
@@ -28,11 +19,17 @@ public class TaskSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Filtre d'accès utilisateur
+            // ✅ Si l'utilisateur n'est pas ADMIN, filtrer par ses droits
             if (currentUser.getRole() != UserRole.ADMIN) {
+                // L'utilisateur peut voir les tâches où il est :
+                // - créateur
+                // - assigné
+                // - membre du projet
                 Predicate createdByUser = criteriaBuilder.equal(root.get("creator"), currentUser);
                 Predicate assignedToUser = criteriaBuilder.equal(root.get("assignee"), currentUser);
-                predicates.add(criteriaBuilder.or(createdByUser, assignedToUser));
+                Predicate memberOfProject = criteriaBuilder.isMember(currentUser, root.get("project").get("members"));
+
+                predicates.add(criteriaBuilder.or(createdByUser, assignedToUser, memberOfProject));
             }
 
             // Filtre par statut
